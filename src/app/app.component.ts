@@ -1,6 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {SecurityService} from "./services/security.service";
 import {KeycloakService} from "keycloak-angular";
+import {KeycloakProfile} from "keycloak-js";
 
 @Component({
   selector: 'app-root',
@@ -9,21 +10,26 @@ import {KeycloakService} from "keycloak-angular";
 })
 export class AppComponent implements OnInit {
   title = 'customer-front-angular-app';
+  public profile? : KeycloakProfile;
 
-  constructor(public secService: SecurityService, public keycloak : KeycloakService) {
-
+  constructor(public keycloakService : KeycloakService) {
   }
 
-  ngOnInit(): void {
+  async ngOnInit() {
+    if (await this.keycloakService.isLoggedIn()) {
+      this.keycloakService.loadUserProfile().then(profile => {
+        this.profile = profile;
+      });
+    }
   }
 
   async login() {
-    await this.keycloak.login({
+    await this.keycloakService.login({
       redirectUri: window.location.origin
     });
   }
 
   logout() {
-    this.keycloak.logout(window.location.origin);
+    this.keycloakService.logout(window.location.origin);
   }
 }
